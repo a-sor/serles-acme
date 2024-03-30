@@ -73,6 +73,15 @@ entityPasswordScheme = {random}
 cacert = /tmp/ca.crt
 cakey = /tmp/ca.key
 
+# Validity period of the certificate being issued. Assigned with validity_PERIOD
+# parameters where PERIOD is one of "weeks", "days", "hours", "minutes", or
+# "seconds". If none is specified, validity_days = 90 is assumed.
+#validity_days = 90
+
+# Data directory where openssl config, db, etc files will be stored.
+# Default: /tmp/serles
+#data_dir = /tmp/serles
+
 # Config for the certbot backend.
 [certbot]
 
