@@ -118,4 +118,14 @@ def load_config_and_backend(filename):
     except ValueError:
         raise ConfigError("[serles]verifyPTR= must be 'true' or 'false'") from None
 
+    try:
+        config["challengeDelay"] = cparser["serles"].getint("challengeDelay", fallback=0)
+    except ValueError:
+        raise ConfigError("[serles]challengeDelay= must be an integer value") from None
+
+    try:
+        config["finalizeDelay"] = cparser["serles"].getint("finalizeDelay", fallback=0)
+    except ValueError:
+        raise ConfigError("[serles]finalizeDelay= must be an integer value") from None
+
     return config, backend

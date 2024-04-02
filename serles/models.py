@@ -68,6 +68,8 @@ class Order(db.Model):  # RFC8555 §7.1.3
     )
     account_id = db.Column(db.String(45), db.ForeignKey("account.id"))
 
+    deadline = db.Column(UTCDateTime, default=lambda: datetime.now(timezone.utc))
+
     @hybrid_property
     def finalize(self):
         return views.api.url_for(views.OrderFinalize, orderid=self.id, _external=True)
@@ -206,6 +208,8 @@ class Challenge(db.Model):  # RFC8555 §7.1.5
         return views.api.url_for(views.ChallengeMain, challid=self.id, _external=True)
 
     authz_id = db.Column(db.String(45), db.ForeignKey("authorization.id"))
+
+    deadline = db.Column(UTCDateTime, default=lambda: datetime.now(timezone.utc))
 
     @property
     def serialized(self):

@@ -38,6 +38,14 @@ subjectNameTemplate = CN={SAN[0]}
 # subjectNameTemplate above:
 forceTemplateDN = true
 
+# How long the challenge lasts, in seconds. Default: 0. Not needed for normal
+# ACME operation, but useful for testing/debugging ACME clients.
+#challengeDelay = 0
+
+# How long the finalization stage lasts, in seconds. Default: 0. Not needed
+# for normal ACME operation, but useful for testing/debugging ACME clients.
+#finalizeDelay = 0
+
 # Backend configuration depends on the loaded backend. You will only need the
 # section corresponding to the backend enabled above; others can be removed.
 

@@ -13,11 +13,15 @@ from .challenge import (
 )
 from .exceptions import ACMEError
 
-api = Api()
+from datetime import datetime, timedelta
 
+api = Api()
+config = {}
 
 def init_config():
+    global config
     c_init_config()
+    from .challenge import config
 
 
 @api.resource("/")
@@ -234,6 +238,11 @@ class OrderMain(Resource):
             raise ACMEError("Order does not exist", 404, "malformed")
         if not order.account_id == g.kid:
             raise ACMEError("Unexpected Account ID", 403, "unauthorized")
+
+        if order.status == OrderStatus.processing or order.status == OrderStatus.pending:
+            if datetime.now(timezone.utc) >= order.deadline:
+                order.status = OrderStatus.valid
+
         return order.serialized
 
 
@@ -252,14 +261,22 @@ class OrderFinalize(Resource):
             raise ACMEError("Order does not exist", 404, "malformed")
         if not order.account_id == g.kid:
             raise ACMEError("Unexpected Account ID", 403, "unauthorized")
-        if order.status != OrderStatus.ready:
+
+        if order.status == OrderStatus.ready:
+            if config['finalizeDelay'] > 0:
+                order.status = OrderStatus.processing
+                order.deadline = datetime.now(timezone.utc) \
+                                 + timedelta(seconds = config['finalizeDelay'])
+            else:
+                order.status = OrderStatus.valid
+        elif order.status != OrderStatus.processing:
             raise ACMEError("", 403, "orderNotReady")
 
         certificate = check_csr_and_return_cert(csr, order)
 
         cert = Certificate(certificate=certificate)
         db.session.add(cert)
-        order.status = OrderStatus.valid
+
         order.certificate = cert
         db.session.commit()  # note: accessing `cert` (as we do indirectly from order.serialized) after the commit requires setting expire_on_commit=False
 
@@ -298,9 +315,20 @@ class ChallengeMain(Resource):
             raise ACMEError("Challenge does not exist", 404, "malformed")
         if not challenge.authorization.order.account_id == g.kid:
             raise ACMEError("Unexpected Account ID", 403, "unauthorized")
+
+        if challenge.status == ChallengeStatus.pending and config['challengeDelay'] > 0:
+            challenge.deadline = datetime.now(timezone.utc) \
+                                 + timedelta(seconds = config['challengeDelay'])
+
         challenge.status = ChallengeStatus.processing
 
         verify_challenge(challenge)  # sets challenge.status, raises on error
+
+        if config['challengeDelay'] > 0 and datetime.now(timezone.utc) < challenge.deadline:
+            challenge.status = ChallengeStatus.processing
+            # not validated yet
+            challenge.validated = None
+            db.session.commit()
 
         authid = challenge.authz_id
         return (
