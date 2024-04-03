@@ -88,7 +88,7 @@ cakey = /tmp/ca.key
 
 # Data directory where openssl config, db, etc files will be stored.
 # Default: /tmp/serles
-#data_dir = /tmp/serles
+#dataDir = /tmp/serles
 
 # Config for the certbot backend.
 [certbot]

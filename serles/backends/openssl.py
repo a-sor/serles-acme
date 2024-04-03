@@ -20,7 +20,7 @@ class Backend:
         if len(self.validity_period) == 0:
             self.validity_period['days'] = 90
 
-        self.data_dir = cfg['data_dir'] if 'data_dir' in cfg else '/tmp/serles'
+        self.data_dir = cfg['dataDir'] if 'dataDir' in cfg else '/tmp/serles'
         self.db_dir = self.data_dir + '/db'
 
         if not exists(self.cakey):
