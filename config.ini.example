@@ -46,6 +46,12 @@ forceTemplateDN = true
 # for normal ACME operation, but useful for testing/debugging ACME clients.
 #finalizeDelay = 0
 
+# Host address. Optional. Default: ::0
+#host = ::0
+
+# Host port. Optional. Default: 8443
+#port = 8443
+
 # Backend configuration depends on the loaded backend. You will only need the
 # section corresponding to the backend enabled above; others can be removed.
 

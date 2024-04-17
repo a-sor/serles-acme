@@ -128,4 +128,14 @@ def load_config_and_backend(filename):
     except ValueError:
         raise ConfigError("[serles]finalizeDelay= must be an integer value") from None
 
+    try:
+        config["host"] = cparser["serles"]["host"]
+    except KeyError:
+        config["host"] = "::0"
+
+    try:
+        config["port"] = cparser["serles"].getint("port", fallback=8443)
+    except ValueError:
+        raise ConfigError("[serles]port= must be an integer value") from None
+
     return config, backend

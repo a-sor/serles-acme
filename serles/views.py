@@ -1,3 +1,4 @@
+import serles
 import jwcrypto.jwk  # fedora package: python3-jwcrypto.noarch
 import jwcrypto.jws
 
@@ -16,12 +17,10 @@ from .exceptions import ACMEError
 from datetime import datetime, timedelta
 
 api = Api()
-config = {}
+
 
 def init_config():
-    global config
     c_init_config()
-    from .challenge import config
 
 
 @api.resource("/")
@@ -263,10 +262,11 @@ class OrderFinalize(Resource):
             raise ACMEError("Unexpected Account ID", 403, "unauthorized")
 
         if order.status == OrderStatus.ready:
-            if config['finalizeDelay'] > 0:
+            finalize_delay = serles.config['finalizeDelay']
+            if finalize_delay > 0:
                 order.status = OrderStatus.processing
                 order.deadline = datetime.now(timezone.utc) \
-                                 + timedelta(seconds = config['finalizeDelay'])
+                                 + timedelta(seconds = finalize_delay)
             else:
                 order.status = OrderStatus.valid
         elif order.status != OrderStatus.processing:
@@ -316,15 +316,17 @@ class ChallengeMain(Resource):
         if not challenge.authorization.order.account_id == g.kid:
             raise ACMEError("Unexpected Account ID", 403, "unauthorized")
 
-        if challenge.status == ChallengeStatus.pending and config['challengeDelay'] > 0:
+        challenge_delay = serles.config['challengeDelay']
+
+        if challenge.status == ChallengeStatus.pending and challenge_delay > 0:
             challenge.deadline = datetime.now(timezone.utc) \
-                                 + timedelta(seconds = config['challengeDelay'])
+                                 + timedelta(seconds = challenge_delay)
 
         challenge.status = ChallengeStatus.processing
 
         verify_challenge(challenge)  # sets challenge.status, raises on error
 
-        if config['challengeDelay'] > 0 and datetime.now(timezone.utc) < challenge.deadline:
+        if challenge_delay > 0 and datetime.now(timezone.utc) < challenge.deadline:
             challenge.status = ChallengeStatus.processing
             # not validated yet
             challenge.validated = None

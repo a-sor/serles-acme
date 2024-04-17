@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-from serles import create_app
+import serles
 
 if __name__ == "__main__":
-    create_app().run(host="::0", port=8443, ssl_context="adhoc")
+    app = serles.create_app()
+    # serles.config was initialized in serles.create_app(), and we can use it now
+    app.run(host=serles.config["host"], port=serles.config["port"], ssl_context="adhoc")
