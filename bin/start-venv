@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+# This can be used to start Serles
+# in a virtual environment.
+
+# Assume this script lives in ./bin/
+base_dir="$(dirname "$(realpath "$0")")/.."
+
+[ -n "$1" ] && config="$1" || config=./config.ini
+
+cd "$base_dir"
+
+. "./serles_venv/bin/activate" && \
+    CONFIG="$config" python -m serles
