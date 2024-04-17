@@ -1,0 +1,16 @@
+# lines starting with a '#' AND whitespace
+# are comments, i.e. # like this
+flask
+Flask-RESTful
+Flask-SQLAlchemy
+# for EJBCABackend:
+requests
+jwcrypto
+cryptography >= 3.1
+dnspython
+requests
+zeep
+# for docs:
+docutils
+# for bin/serles:
+gunicorn
