@@ -43,7 +43,8 @@ class Backend:
 
     def sign(self, csr, subjectDN, subjectAltNames, email):
         cf_filename = self._create_openssl_config(subjectAltNames)
-        csr_filename = join(self.data_dir, 'csr.pem')
+        inform = 'pem' if (len(csr) > 0 and chr(csr[0]) == '-') else 'der'
+        csr_filename = join(self.data_dir, 'csr.' + inform)
         cert_filename = join(self.data_dir, 'certificate.pem')
 
         with open(csr_filename, 'wb') as f:
@@ -67,7 +68,8 @@ class Backend:
             '-out', cert_filename,
             '-cert', ca_cert,
             '-keyfile', ca_key,
-            '-in', csr_filename
+            '-in', csr_filename,
+            '-inform', inform
         ])
 
         chain = open(cert_filename, 'rb').read() + open(ca_cert, "rb").read()
