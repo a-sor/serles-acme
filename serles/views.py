@@ -1,4 +1,3 @@
-import serles
 import jwcrypto.jwk  # fedora package: python3-jwcrypto.noarch
 import jwcrypto.jws
 
@@ -8,14 +7,20 @@ from flask_restful import Resource, Api
 from .utils import base64d
 from .models import *
 from .challenge import (
+    init_config as c_init_config,
     verify_challenge,
     check_csr_and_return_cert,
 )
 from .exceptions import ACMEError
+from .configloader import get_config
 
 from datetime import datetime, timedelta
 
 api = Api()
+
+
+def init_config():
+    c_init_config()
 
 
 @api.resource("/")
@@ -256,8 +261,10 @@ class OrderFinalize(Resource):
         if not order.account_id == g.kid:
             raise ACMEError("Unexpected Account ID", 403, "unauthorized")
 
+        config, _ = get_config()
+
         if order.status == OrderStatus.ready:
-            finalize_delay = serles.config['finalizeDelay']
+            finalize_delay = config['finalizeDelay']
             if finalize_delay > 0:
                 order.status = OrderStatus.processing
                 order.deadline = datetime.now(timezone.utc) \
@@ -311,7 +318,9 @@ class ChallengeMain(Resource):
         if not challenge.authorization.order.account_id == g.kid:
             raise ACMEError("Unexpected Account ID", 403, "unauthorized")
 
-        challenge_delay = serles.config['challengeDelay']
+        config, _ = get_config()
+
+        challenge_delay = config['challengeDelay']
 
         if challenge.status == ChallengeStatus.pending and challenge_delay > 0:
             challenge.deadline = datetime.now(timezone.utc) \
