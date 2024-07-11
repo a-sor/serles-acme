@@ -41,6 +41,17 @@ class Backend:
                 "-out", self.cacert,
             ])
 
+        self.has_inform = False
+
+        try:
+            proc = subprocess.run([
+                'openssl', 'ca', '--help'
+                ], stderr = subprocess.PIPE)
+
+            self.has_inform = '-inform' in str(proc.stderr)
+        except:
+            pass
+
     def sign(self, csr, subjectDN, subjectAltNames, email):
         cf_filename = self._create_openssl_config(subjectAltNames)
         inform = 'pem' if (len(csr) > 0 and chr(csr[0]) == '-') else 'der'
@@ -58,7 +69,7 @@ class Backend:
         t += timedelta(**self.validity_period)
         enddate = t.strftime('%y%m%d%H%M%SZ')
 
-        proc = subprocess.run([
+        cmd = [
             'openssl', 'ca', '-batch',
             '-config', cf_filename,
             '-extensions', 'v3_req',
@@ -69,8 +80,17 @@ class Backend:
             '-cert', ca_cert,
             '-keyfile', ca_key,
             '-in', csr_filename,
-            '-inform', inform
-        ])
+        ]
+
+        if inform == 'der' and self.has_inform:
+            cmd.append('-inform')
+            cmd.append(inform)
+
+        # TODO implement in-place DER to PEM conversion, if inform == 'der' and
+        # self.has_inform == False. Something along the lines of
+        # "openssl req -inform der -outform pem -in infile -out outfile".
+
+        proc = subprocess.run(cmd)
 
         chain = open(cert_filename, 'rb').read() + open(ca_cert, "rb").read()
         return chain.decode("utf-8"), None

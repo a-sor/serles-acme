@@ -4,7 +4,7 @@
 # in a virtual environment.
 
 # Assume this script lives in ./bin/
-base_dir="$(dirname "$(realpath "$0")")/.."
+base_dir="$(dirname "$(readlink -f "$0")")/.."
 
 [ -n "$1" ] && config="$1" || config=./config.ini
 
